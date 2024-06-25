@@ -1,0 +1,49 @@
+services:
+  api:
+    container_name: ${API_CONTAINER_NAME}
+    build:
+      context: .
+      dockerfile: ./Dockerfile.api
+    env_file:
+      - ./.env
+    ports:
+      - ${API_HOST_PORT}:${API_CONTAINER_PORT}
+    ipc: ${IPC}
+    runtime: ${RUNTIME}
+    depends_on:
+      - db
+      - migration
+    volumes:
+      - ${DATA_SOURCE_PATH}:${DATA_TARGET_PATH}
+    networks:
+      - autoencoder-net
+  migration:
+    container_name: ${MIGRATION_CONTAINER_NAME}
+    build:
+      context: .
+      dockerfile: ./Dockerfile.migration
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+    volumes:
+      - ${DATA_SOURCE_PATH}:${DATA_TARGET_PATH}
+    networks:
+      - autoencoder-net
+  db:
+    image: mongo:3.5
+    container_name: ${DB_CONTAINER_NAME}
+    ports:
+      - "${MONGO_DB_PORT}:${MONGO_DB_PORT}"
+    restart: always
+    volumes:
+      - type: bind
+        source: ${MONGO_DATA_SOURCE}
+        target: ${MONGO_DATA_TARGET}
+    networks:
+      - autoencoder-net
+networks:
+  autoencoder-net:
+    driver: bridge
+    name: autoencoder-net
+    external: true

@@ -1,3 +1,13 @@
+gunicorn
+uvicorn
+fastapi
+pydantic-settings
+loguru
+pymongo
+matplotlib
+pandas
+numpy
+
 torch --index-url https://download.pytorch.org/whl/cu121
 torchvision --index-url https://download.pytorch.org/whl/cu121
 torchaudio --index-url https://download.pytorch.org/whl/cu121cu117
