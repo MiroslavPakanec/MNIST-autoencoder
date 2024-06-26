@@ -24,6 +24,18 @@ def load_train_data() -> Tuple[DataFrame, DataFrame]:
         ys.append(sample['image_with_watermark'])
     return pd.DataFrame(xs), pd.DataFrame(ys)
 
+def load_train_sample() -> Tuple[np.ndarray, np.ndarray]:
+    sample =  train_collection.aggregate([{"$sample": {"size": 1}}]).next()
+    x: Series = np.array(sample['image_with_watermark'])
+    y: Series = np.array(sample['image'])
+    return x, y
+
+def load_test_sample() -> Tuple[np.ndarray, np.ndarray]:
+    sample =  test_collection.aggregate([{"$sample": {"size": 1}}]).next()
+    x: Series = np.array(sample['image_with_watermark'])
+    y: Series = np.array(sample['image'])
+    return x, y
+
 def insert_train_samples(xs: np.ndarray, ys: np.ndarray) -> None:
     logger.info('inserting train samples...')
     samples: List[Dict] = [{'image': label.tolist(), 'image_with_watermark': row.tolist()} for row, label in zip(xs, ys)]
