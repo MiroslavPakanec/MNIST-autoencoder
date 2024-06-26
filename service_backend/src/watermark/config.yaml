@@ -1,0 +1,8 @@
+min_number_of_watermarks_per_image: 1
+max_number_of_watermarks_per_image: 10
+watermark_value: 255
+shapes:
+  - [2,12]
+  - [12,2]
+  - [8,4]
+  - [4,8]

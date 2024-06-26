@@ -2,3 +2,5 @@ loguru
 pandas
 pymongo
 pydantic-settings
+pyyaml
+numpy

@@ -18,3 +18,4 @@ class Environment(BaseSettings):
     MONGO_DB_TRAIN_COLLECTION_NAME: str
     MONGO_DB_TEST_COLLECTION_NAME: str
     RUN_MIGRATION: bool
+    WATERMARK_CONFIG_PATH: str
