@@ -9,7 +9,7 @@ import src.loaders.data_db_loader as db_loader
 visualizations_router = APIRouter()
 
 @visualizations_router.post('/train_sample')
-def initialize():
+def train_sample():
     try:
         sample_x, sample_y = db_loader.load_train_sample()
         image: bytes = visualizer.get_sample_image(sample_x, sample_y)
@@ -22,7 +22,7 @@ def initialize():
         return JSONResponse(content={'error': 'Server failed to process request'}, status_code=500)
     
 @visualizations_router.post('/test_sample')
-def initialize():
+def test_sample():
     try:
         sample_x, sample_y = db_loader.load_test_sample()
         image: bytes = visualizer.get_sample_image(sample_x, sample_y)
