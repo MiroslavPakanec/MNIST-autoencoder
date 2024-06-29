@@ -1,61 +1,53 @@
 services:
   mysql:
-      image: mariadb:10.3
-      container_name: ${MYSQL_CONTAINER_NAME}
-      restart: unless-stopped
-      env_file:                              
-          - .env                              
-      ports:
-          - ${MYSQL_PORT1}:3306
-          - ${MYSQL_PORT2}:33060
-      environment:
-          - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
-          - MYSQL_DATABASE=${MYSQL_DATABASE}
-          - MYSQL_USER=${MYSQL_USER}
-          - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      volumes:
-          - database_volume:/var/lib/mysql
+    image: mariadb:10.3
+    container_name: ${MYSQL_CONTAINER_NAME}
+    restart: unless-stopped
+    env_file:                              
+        - .env                              
+    ports:
+        - ${MYSQL_PORT1}:3306
+        - ${MYSQL_PORT2}:33060
+    environment:
+        - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+        - MYSQL_DATABASE=${MYSQL_DATABASE}
+        - MYSQL_USER=${MYSQL_USER}
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+        - database_volume:/var/lib/mysql
+    networks:
+        - autoencoder-net
   phpmyadmin:
-      image: phpmyadmin:latest
-      container_name: ${PHPADMIN_CONTAINER_NAME}
-      restart: unless-stopped
-      depends_on:
-          - mysql
-      env_file:                                
-          - .env                               
-      environment:
-          PMA_HOST: mysql
-      ports:
-          - ${PHPMYADMIN_PORT}:80
+    image: phpmyadmin:latest
+    container_name: ${PHPADMIN_CONTAINER_NAME}
+    restart: unless-stopped
+    depends_on:
+        - mysql
+    env_file:                                
+        - .env                               
+    environment:
+        PMA_HOST: mysql
+    ports:
+        - ${PHPMYADMIN_PORT}:80
+    networks:
+        - autoencoder-net
   mlflow:
-      image: mlflow
-      build:
-        context: ./
-        dockerfile: Dockerfile
-      container_name: ${MLFLOW_CONTAINER_NAME}
-      restart: unless-stopped
-      depends_on:
-          - mysql
-      env_file:                            
-          - .env                             
-      ports:
-          - ${MLFLOW_PORT}:${MLFLOW_CONTAINER_PORT}
-      volumes:
-          - ./mlflow:/mlflow
-  # mlflow:
-  #   image: autoencoder_mlflow
-  #   container_name: ${CONTAINER_NAME}
-  #   build:
-  #     context: ./
-  #     dockerfile: ./Dockerfile
-  #   env_file:
-  #     - ./.env
-  #   ports:
-  #     - ${HOST_PORT}:${CONTAINER_PORT}
-  #   ipc: ${IPC}
-  #   runtime: ${RUNTIME}
-  #   networks:
-  #     - autoencoder-net
+    image: mlflow
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: ${MLFLOW_CONTAINER_NAME}
+    restart: unless-stopped
+    depends_on:
+        - mysql
+    env_file:                            
+        - .env                             
+    ports:
+        - ${MLFLOW_PORT}:${MLFLOW_CONTAINER_PORT}
+    volumes:
+        - ../artifacts:/workspace/mlruns
+    networks:
+        - autoencoder-net
 networks:
   autoencoder-net:
     driver: bridge

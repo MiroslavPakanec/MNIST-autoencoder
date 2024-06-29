@@ -1,20 +1,25 @@
+import mlflow
+
 import torch
 import numpy as np
 from typing import Tuple
 from loguru import logger
 from torch import Tensor, nn, optim
 
+from src.mlflow import mlflow_tracking
 from src.model.model import Autoencoder
 from src.dtos.train_dto import TrainConfig
 import src.loaders.data_db_loader as data_loader
+from src.utilities.environment import Environment
 
-
-def train(config: TrainConfig):
+@mlflow_tracking
+def train(experiment_id: str, config: TrainConfig):
+    logger.info(f'Training. Experiment ID: {experiment_id}')
     device = get_device()
     model = get_model(device, config)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
-    xs_train, ys_trian, xs_val, ys_val = get_train_data(device, config)
+    xs_train, ys_trian, xs_val, ys_val = get_train_data(device, config)   
     
     train_losses = np.zeros(config.epochs)
     val_losses = np.zeros(config.epochs)
@@ -40,10 +45,11 @@ def train(config: TrainConfig):
             val_loss = criterion(ys_val_pred, ys_val)
             val_losses[epoch] = val_loss.item()
 
+        mlflow.log_metric('train_loss', train_losses[epoch], step=epoch)
+        mlflow.log_metric('val_loss', val_losses[epoch], step=epoch)
         logger.info(f'Epoch [{"0" if epoch+1 < 10 else ""}{epoch+1}/{config.epochs}], Loss: {loss.item():.4f}')
-    logger.info(train_losses)
-    logger.info(val_losses)
-    logger.info(f'[Done] Training. Experiment ID: {config.experiment_id}')
+    logger.info(f'[Done] Training. Experiment ID: {experiment_id}')
+    return model, train_losses, val_losses
 
 
 def get_batches(xs, ys, batch_size):
@@ -53,7 +59,7 @@ def get_batches(xs, ys, batch_size):
 def get_device():
     if torch.cuda.is_available():
         logger.info('[Training on GPU]')
-        logger.info(f'[Device: {print(torch.cuda.get_device_name(0))}]')
+        logger.info(f'[Device: {torch.cuda.get_device_name(0)}]')
         return torch.device('cuda')
     else:
         logger.info('[Training on CPU]')

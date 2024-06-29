@@ -1,3 +1,4 @@
+import uuid
 import traceback
 from loguru import logger
 import src.trainer as trainer
@@ -10,8 +11,14 @@ model_router = APIRouter()
 @model_router.post('/train')
 def train(config: TrainConfig):
     try:
-        trainer.train(config)
+        experiment_id: str = str(uuid.uuid4())
+        trainer.train(experiment_id, config)
+        return {
+            'message': f'Training finished successfully.',
+            'experiment_id': experiment_id
+        }
     except Exception as e:
         logger.error('[GENERIC ERROR]')
+        logger.debug(e)
         logger.error(traceback.format_exc())
-        return JSONResponse(content={'error': 'Server failed to process request'}, status_code=500)
+        return JSONResponse(content={'error': 'Server failed to process request', 'experiment_id': experiment_id}, status_code=500)

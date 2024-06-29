@@ -19,3 +19,4 @@ class Environment(BaseSettings):
     MONGO_DB_TEST_COLLECTION_NAME: str
     RUN_MIGRATION: bool
     WATERMARK_CONFIG_PATH: str
+    MLFLOW_TRACKING_URI: str

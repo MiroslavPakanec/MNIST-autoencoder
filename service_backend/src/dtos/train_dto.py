@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from src.dtos.model_dto import ModelConfig
 
 class TrainConfig(BaseModel):
-    experiment_id: str
     model: ModelConfig
     batch_size: int
     epochs: int
