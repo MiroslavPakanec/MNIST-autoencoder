@@ -20,8 +20,8 @@ def load_train_data() -> Tuple[DataFrame, DataFrame]:
     xs: List[int][int] = []
     ys: List[int][int] = []
     for sample in samples:
-        xs.append(sample['image'])
-        ys.append(sample['image_with_watermark'])
+        xs.append(sample['image_with_watermark'])
+        ys.append(sample['image'])
     return pd.DataFrame(xs), pd.DataFrame(ys)
 
 def load_train_sample() -> Tuple[np.ndarray, np.ndarray]:

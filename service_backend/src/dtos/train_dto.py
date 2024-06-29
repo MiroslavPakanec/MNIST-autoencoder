@@ -1,4 +1,3 @@
-import uuid
 from pydantic import BaseModel
 from src.dtos.model_dto import ModelConfig
 
@@ -12,7 +11,6 @@ class TrainConfig(BaseModel):
         'json_schema_extra': {
             "examples": [
                 {
-                    'experiment_id': str(uuid.uuid4()),
                     'model': {
                         'encoder_layers': [
                             {'in_channels': 1, 'out_channels': 16, 'kernel_size': 3, 'stride': 2, 'padding': 1, 'activation': 'relu'}, 

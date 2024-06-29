@@ -25,3 +25,8 @@ def mlflow_tracking(func):
             mlflow.log_artifact('./Dockerfile.api')
         return model, train_losses, val_losses
     return wrapper
+
+
+def load_model(experiment_id: str):
+    model_uri = f"models:/{experiment_id}/latest"
+    return mlflow.pytorch.load_model(model_uri)
