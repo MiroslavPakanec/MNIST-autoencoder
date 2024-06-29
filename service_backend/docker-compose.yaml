@@ -9,7 +9,13 @@ services:
     ports:
       - ${API_HOST_PORT}:${API_CONTAINER_PORT}
     ipc: ${IPC}
-    runtime: ${RUNTIME}
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
     depends_on:
       - db
       - migration

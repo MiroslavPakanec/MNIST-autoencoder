@@ -53,6 +53,7 @@ def get_batches(xs, ys, batch_size):
 def get_device():
     if torch.cuda.is_available():
         logger.info('[Training on GPU]')
+        logger.info(f'[Device: {print(torch.cuda.get_device_name(0))}]')
         return torch.device('cuda')
     else:
         logger.info('[Training on CPU]')

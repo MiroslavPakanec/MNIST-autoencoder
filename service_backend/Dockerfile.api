@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM pytorch/pytorch:2.3.1-cuda11.8-cudnn8-devel
 WORKDIR /workspace
 
 RUN apt update
