@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from io import BytesIO
 
-def get_sample_image(sample_x: np.ndarray, sample_y: np.ndarray) -> bytes:
+def get_samples_image(sample_x: np.ndarray, sample_y: np.ndarray) -> bytes:
     sample_x = sample_x.reshape(28, 28)
     sample_y = sample_y.reshape(28, 28)
 
@@ -17,6 +17,16 @@ def get_sample_image(sample_x: np.ndarray, sample_y: np.ndarray) -> bytes:
 
     img_buffer = BytesIO()
     plt.savefig(img_buffer, format='png')
+    plt.close()
+    img_buffer.seek(0)
+    return img_buffer.getvalue()
+
+def get_sample_image(sample: np.ndarray) -> bytes:
+    sample = sample.reshape(28, 28)
+    img_buffer = BytesIO()
+    plt.imshow(sample, cmap='gray')
+    plt.axis('off') 
+    plt.savefig(img_buffer, format='png', bbox_inches='tight', pad_inches=0)
     plt.close()
     img_buffer.seek(0)
     return img_buffer.getvalue()
