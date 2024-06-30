@@ -45,7 +45,7 @@ services:
     ports:
         - ${MLFLOW_PORT}:${MLFLOW_CONTAINER_PORT}
     volumes:
-        - ../artifacts:/workspace/mlruns
+        - ${MLFLOW_ARTIFACTS_SOURCE}:${MLFLOW_ARTIFACTS_TARGET}
     networks:
         - autoencoder-net
 networks:

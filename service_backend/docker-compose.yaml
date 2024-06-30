@@ -21,7 +21,7 @@ services:
       - migration
     volumes:
       - ${DATA_SOURCE_PATH}:${DATA_TARGET_PATH}
-      - ../artifacts:/workspace/mlruns
+      - ${MLFLOW_ARTIFACTS_SOURCE}:${MLFLOW_ARTIFACTS_TARGET}
     networks:
       - autoencoder-net
   migration:
