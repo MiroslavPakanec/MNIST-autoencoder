@@ -1,11 +1,22 @@
 import { defineStore } from "pinia"
-import { usePixelStore } from "./pixelStore"
-import { Ref, ref } from "vue"
+import { ComputedRef, Ref, computed, ref } from "vue"
+
+export type ImagePayload = { x: number[], y: number[] }
 
 export const useHttpStore = defineStore('http', () => {
-    const pixelStore = usePixelStore()
+    const isLoadingImages: Ref<boolean> = ref(false)
+    const isFetching: ComputedRef<boolean> = computed(() => isLoadingImages.value)
 
-    const isFetching: Ref<boolean> = ref(false)
+    const loadImages = async (): Promise<ImagePayload | undefined> => {
+        const headers = { 'Content-Type': 'application/json' }
+        const method = 'GET'
+        const options = { headers, method }
+        const url = `${process.env.VUE_APP_GENERATE_ENDPOINT_URL}`
+        const response: any = await request(url, options, 'Failed to load digit image.')
+        if (response.error === undefined) return response
+        alert(response.error)
+        return undefined
+    }
 
     const generateDigit = async (digit: number): Promise<number[] | undefined> => {
         const headers = { 'Content-Type': 'application/json' }
@@ -20,7 +31,7 @@ export const useHttpStore = defineStore('http', () => {
 
     const request = async (url: string, options: any, errorMessage?: string): Promise<any> => {
         try {
-            isFetching.value = true
+            isLoadingImages.value = true
             const response: any = await fetch(url, options)
             if (response?.ok) return await response.json()
             else return { error: (await response.json())?.error ?? errorMessage ?? 'Something went wrong' }
@@ -28,9 +39,9 @@ export const useHttpStore = defineStore('http', () => {
             console.log(error)
             return { error: errorMessage ?? error.message ?? 'Something went wrong' }
         } finally {
-            isFetching.value = false
+            isLoadingImages.value = false
         }
     }
 
-    return { generateDigit: generateDigit, isFetching }
+    return { loadImages, isFetching, isLoadingImages }
 })

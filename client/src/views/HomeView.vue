@@ -1,24 +1,14 @@
 <template>
   <div id="container" >
     <div id="navbar" :style="{'width': `${canvasWidth}px`, 'marginTop': `${marginTop}px`}">
-      <button class="btn btn-loader" @click="generate(0)" :disabled="isGenerateButtonDisabled">0</button>
-      <button class="btn btn-loader" @click="generate(1)" :disabled="isGenerateButtonDisabled">1</button>
-      <button class="btn btn-loader" @click="generate(2)" :disabled="isGenerateButtonDisabled">2</button>
-      <button class="btn btn-loader" @click="generate(3)" :disabled="isGenerateButtonDisabled">3</button>
-      <button class="btn btn-loader" @click="generate(4)" :disabled="isGenerateButtonDisabled">4</button>
-      <button class="btn btn-loader" @click="generate(5)" :disabled="isGenerateButtonDisabled">5</button>
-      <button class="btn btn-loader" @click="generate(6)" :disabled="isGenerateButtonDisabled">6</button>
-      <button class="btn btn-loader" @click="generate(7)" :disabled="isGenerateButtonDisabled">7</button>
-      <button class="btn btn-loader" @click="generate(8)" :disabled="isGenerateButtonDisabled">8</button>
-      <button class="btn btn-loader" @click="generate(9)" :disabled="isGenerateButtonDisabled">9</button>
-      <button class="btn btn-loader" @click="pixelStore.reset()" :disabled="isGenerateButtonDisabled">Reset</button>
+      <button class="btn btn-loader" @click="loadImage()" :disabled="isGenerateButtonDisabled">Load new image</button>
+      <button class="btn btn-loader" :disabled="true">Predict</button>
+      <button class="btn btn-loader" @click="imageStore.reset()" :disabled="isGenerateButtonDisabled">Reset</button>
     </div>
     <div id="canvas-container" :style="{ 'height': `${canvasHeight}px`}">
-      <div id="slider-container" :style="{ 'height': `${canvasHeight}px`}">
-        <div id="slider-label-container">
-          <p>{{pixelStore.sharpeningTresholds[1]}} - {{pixelStore.sharpeningTresholds[0]}}</p>
-        </div>
-        <Slider :style="{ 'height': `${canvasHeight}px`}" v-model="pixelStore.sharpeningTresholds" range :min="0" :max="255" orientation="vertical" />
+      <div id="watermark-container" :style="{ 'height': `${canvasHeight}px`}" >
+        <span id="watermark-title">Watermarks</span>
+        <button class="btn" v-for="(watermark, index) in imageStore.watermarks" :key="index" :class="{'active': imageStore.isWatermarkActive(index)}" :disabled="!imageStore.isWatermarkingReady" @click="imageStore.setWatermark(index)">{{watermark.w}} x {{watermark.h}}</button>
       </div>
       <div id="canvas" :style="{ 'height': `${canvasHeight}px`, 'width': `${canvasWidth}px` }" />
     </div>
@@ -27,16 +17,17 @@
 
 <script lang="ts" setup>
 import p5 from 'p5'
-import Slider from 'primevue/slider';
-
 import { ComputedRef, Ref, computed, onMounted, ref } from 'vue'
 import { usePixelStore } from '@/stores/pixelStore'
-import { useHttpStore } from '@/stores/httpStore'
+import { ImagePayload, useHttpStore } from '@/stores/httpStore'
 import { useColorStore } from '@/stores/colorStore';
+import { useImageStore } from '@/stores/imageStore';
+import SelectButton from 'primevue/selectbutton';
 
 const pixelStore = usePixelStore()
 const httpStore = useHttpStore()
 const colorStore = useColorStore()
+const imageStore = useImageStore()
 
 const canvasPercent: Ref<number> = ref(0.6)
 const canvasWidth: Ref<number> = ref(window.innerHeight * canvasPercent.value)
@@ -92,10 +83,10 @@ const sketch = (sketch: any) => {
 
 const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(value, min), max)
 
-const generate = async (digit: number): Promise<void> => {
-  const flatDigit: number[] | undefined = await httpStore.generateDigit(digit)
-  if (!flatDigit) return
-  pixelStore.setGeneratedPixels(flatDigit)
+const loadImage = async (): Promise<void> => {
+  const payload: ImagePayload | undefined = await httpStore.loadImages()
+  if (!payload || !payload.y) return
+  imageStore.setWithNewImage(payload.y)
 }
 
 onMounted(() => {
@@ -106,6 +97,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
+span {
+  color: white;
+}
+
+
 #container {
   height: 100vh;
   width: 100vw;
@@ -122,18 +118,17 @@ onMounted(() => {
   gap: 20px;
 }
 
-#slider-container {
+#watermark-container {
   width: 100px;
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  gap: 20px;
+  flex-direction: column;
+  align-items: flex;
+  justify-content: flex-start;
+  gap: 10px;
 }
 
-#slider-label-container {
-  height: 50px;
-  width: 200px;
-  color: white;
+#watermark-title {
+  padding-bottom: 10px;
 }
 
 #canvas {
@@ -149,9 +144,9 @@ onMounted(() => {
   height: 40px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding-left: 130px !important;
+  justify-content: flex-start;
   padding: 5px;
+  padding-left: 60px;
   gap: 10px;
 }
 
@@ -171,7 +166,7 @@ onMounted(() => {
   gap: 15px;
 }
 
-.btn:hover {
+.btn:hover, .btn.active {
   cursor: pointer;
   border: 1px solid white;
   color: #872341;
