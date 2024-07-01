@@ -32,7 +32,7 @@
 - Verify client uses the right model (see "Model: [Experiemnt_id]" bellow the canvas)
 
 ## Architecture
-<img src="documentation/architecture.png" alt="drawing" width="1500"/>
+<img src="documentation/architecture-diagram.png" style="display: block; margin: auto;" alt="drawing" width="1500"/>
 
 ### Common Issue Log: 
 Torch doesn't recognize GPU in a container
