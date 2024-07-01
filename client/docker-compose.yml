@@ -1,8 +1,7 @@
-version: '3.8'
 services:
   client:
+    image: node:16.20.2
     container_name: ${CLIENT_CONTAINER_NAME}
-    image: ${CLIENT_CONTAINER_NAME}
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -11,9 +10,9 @@ services:
     ports:
       - ${HOST_PORT}:${CONTAINER_PORT}
     networks:
-      - bc-net
+      - autoencoder-net
 networks:
-  bc-net:
-    driver: bridge
-    name: bc-net
+  autoencoder-net:
+    driver: autoencoder-net
+    name: autoencoder-net
     external: true

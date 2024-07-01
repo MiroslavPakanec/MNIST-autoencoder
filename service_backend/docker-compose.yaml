@@ -1,6 +1,7 @@
 services:
   api:
     container_name: ${API_CONTAINER_NAME}
+    image: pytorch:2.3.1-cuda11.8-cudnn8-devel
     build:
       context: .
       dockerfile: ./Dockerfile.api
@@ -25,6 +26,7 @@ services:
     networks:
       - autoencoder-net
   migration:
+    image: ubuntu:20.04
     container_name: ${MIGRATION_CONTAINER_NAME}
     build:
       context: .

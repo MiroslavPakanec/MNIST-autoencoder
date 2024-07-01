@@ -32,7 +32,7 @@ services:
     networks:
         - autoencoder-net
   mlflow:
-    image: mlflow
+    image: python:3.10-slim
     build:
       context: ./
       dockerfile: Dockerfile
