@@ -1,5 +1,12 @@
 # MNIST Autoencoder
-<img src="documentation/demo.gif" alt="drawing" width="600"/>
+
+<img src="documentation/example.png" style="display: block; margin: auto; margin-bottom:50px" alt="drawing" width="1500"/>
+
+
+<video width="1000" controls style="display: block; margin: auto;">
+  <source src="documentation/demo.mp4" type="video/mp4" >
+</video>
+
 
 ## Quick start
 ### Dependencies
@@ -30,7 +37,7 @@
 - Verify client uses the right model (see "Model: [Experiemnt_id]" bellow the canvas)
 
 ## Architecture
-<img src="documentation/Architecture.png" alt="drawing" width="1500"/>
+<img src="documentation/architecture.png" alt="drawing" width="1500"/>
 
 ### Common Issue Log: 
 Torch doesn't recognize GPU in a container
