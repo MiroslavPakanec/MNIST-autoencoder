@@ -30,7 +30,7 @@
 - Verify client uses the right model (see "Model: [Experiemnt_id]" bellow the canvas)
 
 ## Architecture
-<img src="documentation/MNIST_Autoencoder_architecture.png" alt="drawing" width="1500"/>
+<img src="documentation/Architecture.png" alt="drawing" width="1500"/>
 
 ### Common Issue Log: 
 Torch doesn't recognize GPU in a container
