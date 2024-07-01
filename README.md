@@ -1,8 +1,5 @@
 # MNIST Autoencoder
-
-<video width="700" height="700" controls>
-  <source src="documentation/Demo.mp4" type="video/mp4">
-</video>
+<img src="documentation/Demo.gif" alt="drawing" width="600"/>
 
 ## Quick start
 ### Dependencies
