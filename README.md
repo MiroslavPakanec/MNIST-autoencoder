@@ -1,5 +1,5 @@
 # MNIST Autoencoder
-<img src="documentation/Demo.gif" alt="drawing" width="600"/>
+<img src="documentation/demo.gif" alt="drawing" width="600"/>
 
 ## Quick start
 ### Dependencies
