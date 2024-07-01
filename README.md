@@ -1,12 +1,7 @@
 # MNIST Autoencoder
 
 <img src="documentation/example.png" style="display: block; margin: auto; margin-bottom:50px" alt="drawing" width="1500"/>
-
-
-<video width="1000" controls style="display: block; margin: auto;">
-  <source src="documentation/demo.mp4" type="video/mp4" >
-</video>
-
+<img src="documentation/demo.gif" style="display: block; margin: auto; margin-bottom:50px" alt="drawing" width="500"/>
 
 ## Quick start
 ### Dependencies
