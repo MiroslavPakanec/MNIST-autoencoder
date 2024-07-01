@@ -1,7 +1,10 @@
 import { defineStore } from "pinia"
 import { ComputedRef, Ref, computed, ref } from "vue"
+import { usePixelStore } from "./pixelStore"
 
 export type ImagePayload = { x: number[], y: number[] }
+export type PredictImagePayload = { experiment_id: string, sample: number[] }
+export type PredictedImagePayload = { y: number[] }
 
 export const useHttpStore = defineStore('http', () => {
     const isLoadingImages: Ref<boolean> = ref(false)
@@ -11,19 +14,24 @@ export const useHttpStore = defineStore('http', () => {
         const headers = { 'Content-Type': 'application/json' }
         const method = 'GET'
         const options = { headers, method }
-        const url = `${process.env.VUE_APP_GENERATE_ENDPOINT_URL}`
+        const url = `${process.env.VUE_APP_LOAD_IMAGE_ENDPOINT_URL}`
         const response: any = await request(url, options, 'Failed to load digit image.')
         if (response.error === undefined) return response
         alert(response.error)
         return undefined
     }
 
-    const generateDigit = async (digit: number): Promise<number[] | undefined> => {
+    const predictImage = async (pixels: number[]): Promise<PredictedImagePayload | undefined> => {
         const headers = { 'Content-Type': 'application/json' }
-        const method = 'GET'
-        const options = { headers, method }
-        const url = `${process.env.VUE_APP_GENERATE_ENDPOINT_URL}?label=${digit}`
-        const response: any = await request(url, options, 'Failed to generate digit.')
+        const method = 'POST'
+
+        const experimentId: string = process.env.VUE_APP_EXPERIMENT_ID
+        const payload: PredictImagePayload = { experiment_id: experimentId, sample: pixels }
+        const body: string = JSON.stringify(payload)
+
+        const options = { headers, method, body }
+        const url = `${process.env.VUE_APP_PREDICT_IMAGE_ENDPOINT_URL}`
+        const response: any = await request(url, options, 'Failed to load digit image.')
         if (response.error === undefined) return response
         alert(response.error)
         return undefined
@@ -43,5 +51,5 @@ export const useHttpStore = defineStore('http', () => {
         }
     }
 
-    return { loadImages, isFetching, isLoadingImages }
+    return { loadImages, predictImage, isFetching, isLoadingImages }
 })

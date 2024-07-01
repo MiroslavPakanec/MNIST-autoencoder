@@ -2,19 +2,24 @@
   <div id="container" >
     <div id="navbar" :style="{'width': `${canvasWidth}px`, 'marginTop': `${marginTop}px`}">
       <button class="btn btn-loader" @click="loadImage()" :disabled="isGenerateButtonDisabled">Load new image</button>
-      <button class="btn btn-loader" :disabled="true">Predict</button>
+      <button class="btn btn-loader" @click="predictImage()" :disabled="pixelStore.masks.length === 0">Predict</button>
       <button class="btn btn-loader" @click="imageStore.reset()" :disabled="isGenerateButtonDisabled">Reset</button>
     </div>
     <div id="canvas-container" :style="{ 'height': `${canvasHeight}px`}">
       <div id="watermark-container" :style="{ 'height': `${canvasHeight}px`}" >
-        <span id="watermark-title">Watermarks</span>
+        <span class="container-title">Watermarks</span>
         <button class="btn" v-for="(watermark, index) in imageStore.watermarks" :key="index" :class="{'active': imageStore.isWatermarkActive(index)}" :disabled="!imageStore.isWatermarkingReady" @click="imageStore.setWatermark(index)">{{watermark.w}} x {{watermark.h}}</button>
         <span id="watermark-counter">{{ pixelStore.masks.length }} / {{ pixelStore.maxMasks }}</span>
         <button class="btn" :disabled="!imageStore.isWatermarkingReady || pixelStore.masks.length === 0" @click="imageStore.resetWatermarks()">Clear</button>
         <button class="btn" :disabled="!imageStore.isWatermarkingReady || pixelStore.masks.length === 0" @click="showWatermarks = !showWatermarks">{{showWatermarksText}}</button>
-
       </div>
       <div id="canvas" :style="{ 'height': `${canvasHeight}px`, 'width': `${canvasWidth}px` }" />
+      <div id="image-type-container" :style="{ 'height': `${canvasHeight}px`}" >
+        <span class="container-title">Image type</span>
+        <button class="btn" @click="imageStore.setActiveImage('original')" :class="{'active': imageStore.activeImage === 'original'}" :disabled="!showOriginal">Original</button>
+        <button class="btn" @click="imageStore.setActiveImage('watermarked')" :class="{'active': imageStore.activeImage === 'watermarked'}" :disabled="!showWatermarked">Watermarked</button>
+        <button class="btn" @click="imageStore.setActiveImage('reconstructed')" :class="{'active': imageStore.activeImage === 'reconstructed'}" :disabled="!showReconstructed">Reconstructed</button>
+      </div>
     </div>
   </div>
 </template>
@@ -23,7 +28,7 @@
 import p5 from 'p5'
 import { ComputedRef, Ref, computed, onMounted, ref } from 'vue'
 import { usePixelStore } from '@/stores/pixelStore'
-import { ImagePayload, useHttpStore } from '@/stores/httpStore'
+import { ImagePayload, PredictedImagePayload, useHttpStore } from '@/stores/httpStore'
 import { useColorStore } from '@/stores/colorStore';
 import { useImageStore } from '@/stores/imageStore';
 
@@ -34,6 +39,10 @@ const imageStore = useImageStore()
 
 const showWatermarks: Ref<boolean> = ref(true)
 const showWatermarksText: ComputedRef<string> = computed(() => showWatermarks.value ? 'Hide' : 'Show')
+
+const showOriginal: ComputedRef<boolean> = computed(() => imageStore.isWatermarkingReady)
+const showWatermarked: ComputedRef<boolean> = computed(() => imageStore.isWatermarkingReady && pixelStore.masks.length > 0)
+const showReconstructed: ComputedRef<boolean> = computed(() => imageStore.hasReconstructedImage)
 
 const canvasPercent: Ref<number> = ref(0.6)
 const canvasWidth: Ref<number> = ref(window.innerHeight * canvasPercent.value)
@@ -134,6 +143,13 @@ const loadImage = async (): Promise<void> => {
   imageStore.setWithNewImage(payload.y)
 }
 
+const predictImage = async (): Promise<void> => {
+  const pixels: number[] = pixelStore.getFlatPixels()
+  const payload: PredictedImagePayload | undefined = await httpStore.predictImage(pixels)
+  if (!payload || !payload.y) return
+  imageStore.setReconstructedImage(payload.y)
+}
+
 onMounted(() => {
   const sketch_element = document.getElementById('canvas')
   if (sketch_element === null) return
@@ -172,7 +188,16 @@ span {
   gap: 10px;
 }
 
-#watermark-title {
+#image-type-container {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.container-title {
   padding-bottom: 10px;
 }
 
@@ -197,7 +222,6 @@ span {
   align-items: center;
   justify-content: flex-start;
   padding: 5px;
-  padding-left: 60px;
   gap: 10px;
 }
 
