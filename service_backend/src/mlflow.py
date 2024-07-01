@@ -23,6 +23,7 @@ def mlflow_tracking(func):
             mlflow.log_artifact('./requirements.api.txt')
             mlflow.log_artifact('./docker-compose.yaml')
             mlflow.log_artifact('./Dockerfile.api')
+            mlflow.log_artifact('./src/watermark/config.yaml')
         return model, train_losses, val_losses
     return wrapper
 

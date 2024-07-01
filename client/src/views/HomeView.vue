@@ -3,7 +3,7 @@
     <div id="navbar" :style="{'width': `${canvasWidth}px`, 'marginTop': `${marginTop}px`}">
       <button class="btn btn-loader" @click="loadImage()" :disabled="isProcessing">Load new image</button>
       <button class="btn" @click="copy()" :disabled="isProcessing || !imageStore.isWatermarkingReady">{{ copyButtonText }}</button>
-      <button class="btn btn-loader" @click="predictImage()" :disabled="pixelStore.masks.length === 0">Predict</button>
+      <button class="btn btn-loader" @click="predictImage()" :disabled="pixelStore.masks.length === 0 || modelId.length === 0">Predict</button>
       <button class="btn btn-loader" @click="imageStore.reset()" :disabled="isProcessing">Reset</button>
     </div>
     <div id="canvas-container" :style="{ 'height': `${canvasHeight}px`}">
@@ -14,7 +14,10 @@
         <button class="btn" :disabled="!imageStore.isWatermarkingReady || pixelStore.masks.length === 0" @click="imageStore.resetWatermarks()">Clear</button>
         <button class="btn" :disabled="!imageStore.isWatermarkingReady || pixelStore.masks.length === 0" @click="showWatermarks = !showWatermarks">{{showWatermarksText}}</button>
       </div>
-      <div id="canvas" :style="{ 'height': `${canvasHeight}px`, 'width': `${canvasWidth}px` }" />
+      <div>
+        <div id="canvas" :style="{ 'height': `${canvasHeight}px`, 'width': `${canvasWidth}px` }" />
+        <span id=version>Model: {{ modelId }}</span>
+      </div>
       <div id="image-type-container" :style="{ 'height': `${canvasHeight}px`}" >
         <span class="container-title">Image type</span>
         <button class="btn" @click="imageStore.setActiveImage('original')" :class="{'active': imageStore.activeImage === 'original'}" :disabled="!showOriginal">Original</button>
@@ -43,6 +46,8 @@ const secondary: string = colorStore.secondary
 const ternary: string = colorStore.ternary
 const borderPrimary = `1px solid ${primary}`
 const borderTernary = `1px solid ${ternary}`
+
+const modelId: string = process.env.VUE_APP_EXPERIMENT_ID.length === 0 ? '[not set]' : process.env.VUE_APP_EXPERIMENT_ID
 
 const showWatermarks: Ref<boolean> = ref(false)
 const showWatermarksText: ComputedRef<string> = computed(() => showWatermarks.value ? 'Hide' : 'Show')
@@ -309,5 +314,9 @@ span {
   }
 } 
 
-
+#version {
+  padding-top: 5px;
+  float: left;
+  color: v-bind(ternary);
+}
 </style>
