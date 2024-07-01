@@ -29,9 +29,9 @@
 import p5 from 'p5'
 import { ComputedRef, Ref, computed, onMounted, ref } from 'vue'
 import { usePixelStore } from '@/stores/pixelStore'
-import { ImagePayload, PredictedImagePayload, useHttpStore } from '@/stores/httpStore'
+import { ImagePayload, PredictedImagePayload, WatermarkPayload, useHttpStore } from '@/stores/httpStore'
 import { useColorStore } from '@/stores/colorStore';
-import { useImageStore } from '@/stores/imageStore';
+import { Watermark, useImageStore } from '@/stores/imageStore';
 
 const pixelStore = usePixelStore()
 const httpStore = useHttpStore()
@@ -165,10 +165,18 @@ const predictImage = async (): Promise<void> => {
   showWatermarks.value = false
 }
 
-onMounted(() => {
+const loadWatermarks = async (): Promise<void> => {
+  const payload: WatermarkPayload | undefined = await httpStore.loadWatermarks()
+  if (!payload || payload.length === 0) return
+  const watermarks: Watermark[] = payload.map((x: [number, number]) => { return { w: x[0], h: x[1] }})
+  imageStore.setWatermarks(watermarks)
+}
+
+onMounted(async () => {
   const sketch_element = document.getElementById('canvas')
   if (sketch_element === null) return
   new p5(sketch, sketch_element)
+  await loadWatermarks()
 })
 </script>
 

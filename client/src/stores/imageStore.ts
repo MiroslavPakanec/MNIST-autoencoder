@@ -47,12 +47,9 @@ export const useImageStore = defineStore('image', () => {
 
     const isWatermarkingReady: ComputedRef<boolean> = computed(() => originalImage.value !== undefined && watermarkedImage.value !== undefined)
 
-    const watermarks: Ref<Watermark[]> = ref([
-        { w: 2, h: 12 },
-        { w: 12, h: 2 },
-        { w: 8, h: 4 },
-        { w: 4, h: 8 },
-    ])
+    const defaultWatermarks: Ref<Watermark[]> = ref([{ w: 8, h: 4 }, { w: 4, h: 8 }])
+    const watermarks: Ref<Watermark[]> = ref(defaultWatermarks)
+    const setWatermarks = (new_watermarks: Watermark[]): void => {watermarks.value = new_watermarks}
 
     const activeWatermarkIndex: Ref<number> = ref(0)
     const getWatermark = (): Watermark => watermarks.value[activeWatermarkIndex.value]
@@ -86,6 +83,7 @@ export const useImageStore = defineStore('image', () => {
         reset,
         isWatermarkingReady,
         watermarks,
+        setWatermarks,
         getWatermark,
         setWatermark,
         isWatermarkActive,

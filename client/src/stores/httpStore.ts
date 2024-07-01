@@ -5,10 +5,22 @@ import { usePixelStore } from "./pixelStore"
 export type ImagePayload = { x: number[], y: number[] }
 export type PredictImagePayload = { experiment_id: string, sample: number[] }
 export type PredictedImagePayload = { y: number[] }
+export type WatermarkPayload = [number, number][]
 
 export const useHttpStore = defineStore('http', () => {
     const isLoadingImages: Ref<boolean> = ref(false)
     const isFetching: ComputedRef<boolean> = computed(() => isLoadingImages.value)
+
+    const loadWatermarks = async (): Promise<WatermarkPayload | undefined> => {
+        const headers = { 'Content-Type': 'application/json' }
+        const method = 'GET'
+        const options = { headers, method }
+        const url = `${process.env.VUE_APP_LOAD_WATERMARKS_ENDPOINT_URL}`
+        const response: any = await request(url, options, 'Failed to load digit image.')
+        if (response.error === undefined) return response
+        alert(response.error)
+        return undefined
+    }
 
     const loadImages = async (): Promise<ImagePayload | undefined> => {
         const headers = { 'Content-Type': 'application/json' }
@@ -51,5 +63,5 @@ export const useHttpStore = defineStore('http', () => {
         }
     }
 
-    return { loadImages, predictImage, isFetching, isLoadingImages }
+    return { loadImages, loadWatermarks, predictImage, isFetching, isLoadingImages }
 })

@@ -9,6 +9,7 @@ from src.utilities.logging.config import (initialize_logging, initialize_logging
 from src.utilities.utilities import get_uptime
 from src.routers.sampling_router import sampling_router
 from src.routers.model_router import model_router
+from src.routers.watermark_router import watermark_router
 
 app = FastAPI()
 
@@ -23,6 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(watermark_router, tags=['Watermarks'])
 app.include_router(sampling_router, tags=['Sampling'])
 app.include_router(model_router, tags=['Model'])
 

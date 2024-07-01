@@ -41,6 +41,12 @@ def add_watermarks(images: np.ndarray):
     images_with_watermark = images_with_watermark.reshape(-1, 784)
     return images_with_watermark  
 
+def get_watermarks() -> WatermarkShapes:
+    config: WatermarkConfig = _load_config()
+    shapes: WatermarkShapes = config.shapes
+    return shapes
+
+
 def _load_config() -> WatermarkConfig:
     try:
         with open(Environment().WATERMARK_CONFIG_PATH, 'r') as file:
