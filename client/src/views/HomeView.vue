@@ -9,6 +9,10 @@
       <div id="watermark-container" :style="{ 'height': `${canvasHeight}px`}" >
         <span id="watermark-title">Watermarks</span>
         <button class="btn" v-for="(watermark, index) in imageStore.watermarks" :key="index" :class="{'active': imageStore.isWatermarkActive(index)}" :disabled="!imageStore.isWatermarkingReady" @click="imageStore.setWatermark(index)">{{watermark.w}} x {{watermark.h}}</button>
+        <span id="watermark-counter">{{ pixelStore.masks.length }} / {{ pixelStore.maxMasks }}</span>
+        <button class="btn" :disabled="!imageStore.isWatermarkingReady || pixelStore.masks.length === 0" @click="imageStore.resetWatermarks()">Clear</button>
+        <button class="btn" :disabled="!imageStore.isWatermarkingReady || pixelStore.masks.length === 0" @click="showWatermarks = !showWatermarks">{{showWatermarksText}}</button>
+
       </div>
       <div id="canvas" :style="{ 'height': `${canvasHeight}px`, 'width': `${canvasWidth}px` }" />
     </div>
@@ -22,12 +26,14 @@ import { usePixelStore } from '@/stores/pixelStore'
 import { ImagePayload, useHttpStore } from '@/stores/httpStore'
 import { useColorStore } from '@/stores/colorStore';
 import { useImageStore } from '@/stores/imageStore';
-import SelectButton from 'primevue/selectbutton';
 
 const pixelStore = usePixelStore()
 const httpStore = useHttpStore()
 const colorStore = useColorStore()
 const imageStore = useImageStore()
+
+const showWatermarks: Ref<boolean> = ref(true)
+const showWatermarksText: ComputedRef<string> = computed(() => showWatermarks.value ? 'Hide' : 'Show')
 
 const canvasPercent: Ref<number> = ref(0.6)
 const canvasWidth: Ref<number> = ref(window.innerHeight * canvasPercent.value)
@@ -42,19 +48,53 @@ const secondary: string = colorStore.secondary
 const ternary: string = colorStore.ternary
 const borderTernary = `1px solid ${ternary}`
 
+const isCanvasHover: ComputedRef<boolean> = computed(() => mouseXPercent.value > 0 && mouseXPercent.value < 100 && mouseYPercent.value > 0 && mouseYPercent.value < 100)
+const watermarkPixelX: ComputedRef<number | undefined> = computed(() => isCanvasHover.value ? Math.floor(28 * (mouseXPercent.value / 100)) : undefined)
+const watermarkPixelY: ComputedRef<number | undefined> = computed(() => isCanvasHover.value ? Math.floor(28 * (mouseYPercent.value / 100)) : undefined)
+const watermarkStartX: ComputedRef<number | undefined>  = computed(() => watermarkPixelX.value !== undefined ? watermarkPixelX.value - (Math.ceil(imageStore.getWatermark().w / 2) - 1) : undefined)
+const watermarkEndX: ComputedRef<number | undefined> = computed(() => watermarkPixelX.value !== undefined ? watermarkPixelX.value + (Math.ceil(imageStore.getWatermark().w / 2)) : undefined)
+const watermarkStartY: ComputedRef<number | undefined> = computed(() => watermarkPixelY.value !== undefined ? watermarkPixelY.value - (Math.ceil(imageStore.getWatermark().h / 2) - 1) : undefined)
+const watermarkEndY: ComputedRef<number | undefined> = computed(() => watermarkPixelY.value !== undefined ? watermarkPixelY.value + (Math.ceil(imageStore.getWatermark().h / 2)) : undefined)
+
+
 const drawPixels = (sketch: any): void => {
   sketch.stroke(150, 150, 150)
   sketch.strokeWeight = 1
-  for (let i = 0; i < pixelStore.pixels.length; i++) {
-    const row = pixelStore.pixels[i]
+
+  const isWatermarkingReady: boolean = watermarkStartX.value !== undefined && watermarkEndX.value !== undefined && watermarkStartY.value !== undefined && watermarkEndY.value !== undefined && imageStore.isWatermarkingReady
+  const pixels: number[][] = pixelStore.getPixels()
+
+  for (let i = 0; i < pixels.length; i++) {
+    const row = pixels[i]
     for (let j = 0; j < row.length; j++) {
       const pixel: number = row[j]
+      
       sketch.fill(pixel, pixel, pixel)
+      const drawWatermark = isWatermarkingReady && i >= watermarkStartX.value! && i <= watermarkEndX.value! && j >= watermarkStartY.value! && j <= watermarkEndY.value!
+      if (drawWatermark) sketch.fill(36, 7, 80)
+
       const w: number = canvasWidth.value / 28
       const h: number = w
       const x: number = (w * i) - (canvasHeight.value / 2)
       const y: number = (h * j) - (canvasHeight.value / 2)
       sketch.rect(x, y, w, h)
+    }
+  }
+}
+
+const drawMasks = (sketch: any): void => {
+  sketch.stroke(36, 7, 80)
+  sketch.fill(169, 142, 209)
+  const w: number = canvasWidth.value / 28
+  const h: number = w
+
+  for (const mask of pixelStore.masks) {
+    for (let i = mask.sx; i <= mask.ex; i++) {
+      for (let j = mask.sy; j <= mask.ey; j++) {
+        const x: number = (w * i) - (canvasHeight.value / 2)
+        const y: number = (h * j) - (canvasHeight.value / 2)
+        sketch.rect(x, y, w, h)
+      }
     }
   }
 }
@@ -73,11 +113,16 @@ const sketch = (sketch: any) => {
   sketch.draw = () => {
     sketch.background(255,255,255)
     drawPixels(sketch)
+    if (showWatermarks.value) drawMasks(sketch)
   }
 
   sketch.mouseMoved = () => {
     mouseXPercent.value = clamp(0, sketch.mouseX / canvasWidth.value, 1) * 100
     mouseYPercent.value = clamp(0, sketch.mouseY / canvasHeight.value, 1) * 100
+  }
+
+  sketch.mousePressed = () => {
+    if (sketch.mouseButton === sketch.LEFT && isCanvasHover.value && imageStore.isWatermarkingReady) imageStore.addWatermark(watermarkStartX.value, watermarkEndX.value, watermarkStartY.value, watermarkEndY.value) 
   }
 }
 
@@ -131,11 +176,17 @@ span {
   padding-bottom: 10px;
 }
 
+#watermark-counter {
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
 #canvas {
   padding: 10px;
   background-color: white;
   border-radius: 20px;
   box-sizing: content-box;
+  cursor: none;
 }
 
 #navbar {
