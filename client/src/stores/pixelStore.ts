@@ -78,7 +78,7 @@ export const usePixelStore = defineStore('pixels', () => {
         for (let i = 0; i < dim.value; i ++) {
             const row: number[] = []
             for (let j = 0; j < dim.value; j++) {
-                if (i >= m.sx && i <= m.ex && j >= m.sy && j <= m.ey) row.push(255)
+                if (i >= m.sx && i <= m.ex && j >= m.sy && j <= m.ey) row.push(0)
                 else row.push(pixels[j][i])
             }
             masked.push(row)

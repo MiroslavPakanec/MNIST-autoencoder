@@ -1,9 +1,10 @@
 <template>
   <div id="container" >
     <div id="navbar" :style="{'width': `${canvasWidth}px`, 'marginTop': `${marginTop}px`}">
-      <button class="btn btn-loader" @click="loadImage()" :disabled="isGenerateButtonDisabled">Load new image</button>
+      <button class="btn btn-loader" @click="loadImage()" :disabled="isProcessing">Load new image</button>
+      <button class="btn" @click="copy()" :disabled="isProcessing || !imageStore.isWatermarkingReady">{{ copyButtonText }}</button>
       <button class="btn btn-loader" @click="predictImage()" :disabled="pixelStore.masks.length === 0">Predict</button>
-      <button class="btn btn-loader" @click="imageStore.reset()" :disabled="isGenerateButtonDisabled">Reset</button>
+      <button class="btn btn-loader" @click="imageStore.reset()" :disabled="isProcessing">Reset</button>
     </div>
     <div id="canvas-container" :style="{ 'height': `${canvasHeight}px`}">
       <div id="watermark-container" :style="{ 'height': `${canvasHeight}px`}" >
@@ -37,9 +38,16 @@ const httpStore = useHttpStore()
 const colorStore = useColorStore()
 const imageStore = useImageStore()
 
-const showWatermarks: Ref<boolean> = ref(true)
-const showWatermarksText: ComputedRef<string> = computed(() => showWatermarks.value ? 'Hide' : 'Show')
+const primary: string = colorStore.primary
+const secondary: string = colorStore.secondary
+const ternary: string = colorStore.ternary
+const borderPrimary = `1px solid ${primary}`
+const borderTernary = `1px solid ${ternary}`
 
+const showWatermarks: Ref<boolean> = ref(false)
+const showWatermarksText: ComputedRef<string> = computed(() => showWatermarks.value ? 'Hide' : 'Show')
+const copyButtonText: Ref<string> = ref('Copy')
+  
 const showOriginal: ComputedRef<boolean> = computed(() => imageStore.isWatermarkingReady)
 const showWatermarked: ComputedRef<boolean> = computed(() => imageStore.isWatermarkingReady && pixelStore.masks.length > 0)
 const showReconstructed: ComputedRef<boolean> = computed(() => imageStore.hasReconstructedImage)
@@ -48,14 +56,9 @@ const canvasPercent: Ref<number> = ref(0.6)
 const canvasWidth: Ref<number> = ref(window.innerHeight * canvasPercent.value)
 const canvasHeight: Ref<number> = ref(window.innerHeight * canvasPercent.value)
 const marginTop: ComputedRef<number> = computed(() => (window.innerHeight / 2) - (canvasHeight.value / 2))
-const isGenerateButtonDisabled: ComputedRef<boolean> = computed(() => httpStore.isFetching || pixelStore.isProcessing)
+const isProcessing: ComputedRef<boolean> = computed(() => httpStore.isFetching || pixelStore.isProcessing)
 const mouseXPercent: Ref<number> = ref(0)
 const mouseYPercent: Ref<number> = ref(0)
-
-const primary: string = colorStore.primary
-const secondary: string = colorStore.secondary
-const ternary: string = colorStore.ternary
-const borderTernary = `1px solid ${ternary}`
 
 const isCanvasHover: ComputedRef<boolean> = computed(() => mouseXPercent.value > 0 && mouseXPercent.value < 100 && mouseYPercent.value > 0 && mouseYPercent.value < 100)
 const watermarkPixelX: ComputedRef<number | undefined> = computed(() => isCanvasHover.value ? Math.floor(28 * (mouseXPercent.value / 100)) : undefined)
@@ -137,6 +140,17 @@ const sketch = (sketch: any) => {
 
 const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(value, min), max)
 
+const copy = async (): Promise<void> => {
+  const pixels: number[] = pixelStore.getFlatPixels()
+  const pixelStr: string = JSON.stringify(pixels)
+  await navigator.clipboard.writeText(pixelStr)
+  copyButtonText.value = 'Copied!'
+  setTimeout(() => {
+    copyButtonText.value = 'Copy';
+  }, 2000);
+}
+
+
 const loadImage = async (): Promise<void> => {
   const payload: ImagePayload | undefined = await httpStore.loadImages()
   if (!payload || !payload.y) return
@@ -148,6 +162,7 @@ const predictImage = async (): Promise<void> => {
   const payload: PredictedImagePayload | undefined = await httpStore.predictImage(pixels)
   if (!payload || !payload.y) return
   imageStore.setReconstructedImage(payload.y)
+  showWatermarks.value = false
 }
 
 onMounted(() => {
@@ -249,9 +264,9 @@ span {
 }
 
 .btn:disabled {
-  border: 1px solid #4e2c5b;
-  color: #4e2c5b;
-  background-color: rgba(183, 0, 255, 0.2);
+  border: v-bind(borderPrimary);
+  color: v-bind(primary);
+  background-color: v-bind(secondary);
   cursor: not-allowed;
 }
 

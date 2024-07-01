@@ -26,6 +26,7 @@ export const useImageStore = defineStore('image', () => {
         watermarkedImage.value = image
         recostructedImage.value = undefined
 
+        resetWatermarks()
         activeImage.value = 'original'
         pixelStore.setPixels(image)
     }
